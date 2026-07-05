@@ -240,6 +240,8 @@ def _embed_boundary(x_flat, n, T_top, T_others=0.0):
 
 def make_iter_gif(x_snaps, n, T_top, title, path, fps=8):
     """迭代过程 GIF：每帧一张嵌入后的温度场快照。"""
+    if not x_snaps:
+        raise ValueError("x_snaps 不能为空（至少需含初值副本）")
     frames = [_embed_boundary(s, n, T_top) for s in x_snaps]
     fig, ax = plt.subplots(figsize=(5, 4.5))
     im = ax.imshow(frames[0], cmap='RdBu_r', vmin=0, vmax=100, origin='upper')
