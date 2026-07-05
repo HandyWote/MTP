@@ -1,6 +1,7 @@
 """任务一：迭代法解稳态热传导 Ax=b。单文件函数化。"""
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
 
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'PingFang SC', 'Heiti TC', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
@@ -220,3 +221,37 @@ def plot_divergence(err_div, path):
     ax.grid(True, which='both', alpha=0.3)
     fig.savefig(path, dpi=300, bbox_inches='tight')
     plt.close(fig)
+
+
+# ────────────────────────────────────────────────────────────────────
+# GIF 动画（3 张独立 GIF：Jacobi / Gauss-Seidel / 直接法）
+# 帧策略：把 n×n 内部解嵌入 (n+2)×(n+2) 含边界温度场，色标统一 RdBu_r 0–100。
+# ────────────────────────────────────────────────────────────────────
+def _embed_boundary(x_flat, n, T_top, T_others=0.0):
+    """把 n×n 内部解嵌入 (n+2)×(n+2) 含边界温度场，便于画完整铁板。"""
+    interior = x_flat.reshape(n, n)
+    full = np.full((n+2, n+2), T_others, dtype=float)
+    full[1:-1, 1:-1] = interior
+    full[0, :] = T_top            # 顶边
+    return full
+
+
+def make_iter_gif(x_snaps, n, T_top, title, path, fps=8):
+    """迭代过程 GIF：每帧一张嵌入后的温度场快照。"""
+    frames = [_embed_boundary(s, n, T_top) for s in x_snaps]
+    fig, ax = plt.subplots(figsize=(5, 4.5))
+    im = ax.imshow(frames[0], cmap='RdBu_r', vmin=0, vmax=100, origin='upper')
+    ax.set_title(title); fig.colorbar(im, ax=ax, label='温度 °C')
+    def update(k):
+        im.set_data(frames[min(k, len(frames)-1)])
+        ax.set_xlabel(f'第 {min(k,len(frames)-1)} 帧')
+        return [im]
+    anim = FuncAnimation(fig, update, frames=len(frames), interval=1000//fps, blit=False)
+    anim.save(path, writer=PillowWriter(fps=fps))
+    plt.close(fig)
+
+
+def make_direct_gif(x_final, n, T_top, title, path, fps=2):
+    """两帧：初值全 0 → 最终解。"""
+    zero = np.zeros(n*n)
+    make_iter_gif([zero, x_final], n, T_top, title, path, fps=fps)
