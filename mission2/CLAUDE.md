@@ -14,7 +14,7 @@ Three independent mathematical modeling tasks, each structured as:
 
 - `docs/` — Design documents (任务书, 项目计划, per-task detailed design, report/practice templates)
 - `task1/` — Linear Algebra: iterative solvers (Jacobi, Gauss-Seidel) for Ax=b (heat conduction)
-- `task2/` — Discrete Math: three-way switch logic (XOR-based)
+- `mission2/` — Discrete Math: three-way switch logic (XOR-based)
 - `task3/` — Probability & Statistics: Bootstrap estimation
 - `output/` (within each task dir) — Generated visualization PNGs
 
@@ -51,12 +51,12 @@ pip install -r requirements.txt
 
 # Run any task
 python task1/heat1d.py
-python task2/three_switch.py
+python mission2/three_switch.py
 python task3/bootstrap_estimate.py
 
 # Generate all outputs for a task (each script self-contained)
 python task1/heat1d.py          # produces output/*.png
-python task2/three_switch.py    # produces output/*.png
+python mission2/three_switch.py    # produces output/*.png
 ```
 
 There is no test framework, linter, or build step — each script is standalone, produces its own figures, and prints results to stdout.
