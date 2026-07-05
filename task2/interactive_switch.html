@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务二 · 三控开关交互演示 — L = S1 ⊕ S2 ⊕ S3</title>
+<style>
+  :root {
+    --bg: #f5f0eb;
+    --surface: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #d97706;
+    --accent-glow: #fbbf24;
+    --on-bg: #fef3c7;
+    --on-border: #f59e0b;
+    --off-bg: #e5e5e5;
+    --off-border: #a3a3a3;
+    --pass: #16a34a;
+    --fail: #dc2626;
+    --highlight: #fef9c3;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    padding: 24px;
+  }
+  .card {
+    max-width: 820px; width: 100%;
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    padding: 36px 40px 32px;
+  }
+  h1 {
+    text-align: center; font-size: 1.5rem; font-weight: 700;
+    margin-bottom: 6px; letter-spacing: 0.5px;
+  }
+  .subtitle { text-align: center; font-size: 0.85rem; color: var(--muted); margin-bottom: 28px; }
+
+  /* ========== 开关行（横向） ========== */
+  .switches-row { display: flex; justify-content: center; gap: 64px; margin-bottom: 28px; }
+  .switch-block { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .switch-label { font-weight: 700; font-size: 1rem; color: var(--muted); }
+  .switch-knob {
+    width: 72px; height: 124px; border-radius: 12px;
+    cursor: pointer; border: 3px solid var(--off-border);
+    background: var(--off-bg);
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s ease; position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .switch-knob.on {
+    background: var(--on-bg); border-color: var(--on-border);
+    box-shadow: 0 0 18px rgba(245,158,11,.35);
+  }
+  .switch-knob::after {
+    content: ""; width: 56px; height: 8px; border-radius: 4px;
+    background: #ccc; position: absolute;
+    transition: all .2s ease;
+  }
+  .switch-knob.on::after { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+  .switch-val { font-size: 1.15rem; font-weight: 700; }
+  .switch-knob.on .switch-val { color: var(--accent); }
+
+  /* ========== 灯 + 公式区 ========== */
+  .formula-box {
+    background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 14px;
+    padding: 20px 24px; margin-bottom: 20px; text-align: center;
+  }
+  .lamp-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 12px; }
+  .lamp {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #d4d4d4; border: 3px solid #a3a3a3;
+    transition: all .25s ease;
+  }
+  .lamp.on {
+    background: radial-gradient(circle at 40% 35%, #fff7c2, #fbbf24 40%, #d97706 100%);
+    border-color: #d97706;
+    box-shadow: 0 0 28px 6px rgba(245,158,11,.5), 0 0 60px 12px rgba(251,191,36,.25);
+  }
+  .lamp-text { font-weight: 700; font-size: 1.05rem; }
+  .formula-generic { font-size: 1.2rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .formula-subst  { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+  .formula-steps  { font-size: 0.95rem; color: var(--muted); min-height: 1.4em; }
+
+  /* ========== 真值表 ========== */
+  .tt-wrapper { margin-bottom: 16px; }
+  .tt-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; color: var(--muted); }
+  table.truth-table {
+    width: 100%; border-collapse: collapse; font-size: 0.95rem;
+  }
+  table.truth-table th {
+    background: #f0f0f0; font-weight: 700; padding: 8px 6px; border: 1px solid #ddd; text-align: center;
+  }
+  table.truth-table td {
+    text-align: center; padding: 6px; border: 1px solid #eee;
+    transition: background .15s;
+  }
+  table.truth-table tr.active { background: var(--highlight); }
+  table.truth-table tr.active td:first-child { position: relative; }
+  table.truth-table tr.active td:first-child::before { content: "▶"; position: absolute; left: 4px; color: var(--accent); font-size: 0.7rem; }
+  .L-1 { color: var(--accent); font-weight: 700; }
+  .L-0 { color: #888; }
+
+  /* ========== 底部统计 ========== */
+  .footer-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--muted); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 0.8rem; }
+  .badge-pass { background: #dcfce7; color: var(--pass); }
+  .badge-off  { background: #fee2e2; color: var(--fail); }
+  a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>三控开关交互演示</h1>
+  <p class="subtitle">L = S1 ⊕ S2 ⊕ S3 &nbsp;·&nbsp; 点击开关切换状态 &nbsp;·&nbsp; 任务二 · 离散数学实验</p>
+
+  <!-- 三个开关（横向） -->
+  <div class="switches-row" id="switchRow">
+    <div class="switch-block" data-switch="0">
+      <div class="switch-knob off" id="knob0">
+        <span class="switch-val">0</span>
+      </div>
+      <span class="switch-label">S1</span>
+    </div>
+    <div class="switch-block" data-switch="1">
+      <div class="switch-knob off" id="knob1">
+        <span class="switch-val">0</span>
+      </div>
+      <span class="switch-label">S2</span>
+    </div>
+    <div class="switch-block" data-switch="2">
+      <div class="switch-knob off" id="knob2">
+        <span class="switch-val">0</span>
+      </div>
+      <span class="switch-label">S3</span>
+    </div>
+  </div>
+
+  <!-- 灯 + 公式 -->
+  <div class="formula-box">
+    <div class="lamp-row">
+      <div class="lamp off" id="lamp"></div>
+      <span class="lamp-text" id="lampLabel">灯灭</span>
+    </div>
+    <div class="formula-generic">L = S1 ⊕ S2 ⊕ S3</div>
+    <div class="formula-subst"  id="formulaSubst">L = 0 ⊕ 0 ⊕ 0</div>
+    <div class="formula-steps"  id="formulaSteps">L = (0⊕0)⊕0 = 0⊕0 = 0</div>
+  </div>
+
+  <!-- 真值表 -->
+  <div class="tt-wrapper">
+    <div class="tt-title">真值表（当前状态高亮）</div>
+    <table class="truth-table" id="truthTable">
+      <thead><tr><th>S1</th><th>S2</th><th>S3</th><th>L</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- 底部 -->
+  <div class="footer-row">
+    <span>当前亮灯: <strong id="onCount">0</strong> / 3 开关打开</span>
+    <a href="three_switch.py" target="_blank">查看源码</a>
+  </div>
+</div>
+
+<script>
+// ===== 状态 =====
+const state = [0, 0, 0];                     // S1, S2, S3
+const truthTable = [];                        // [{s1,s2,s3, L}]
+for (let i = 0; i < 8; i++) {
+  const s1 = (i >> 2) & 1, s2 = (i >> 1) & 1, s3 = i & 1;
+  truthTable.push({ s1, s2, s3, L: s1 ^ s2 ^ s3 });
+}
+
+// ===== 渲染 =====
+function render() {
+  const [s1, s2, s3] = state;
+  const L = s1 ^ s2 ^ s3;
+  const onCount = state.reduce((a, b) => a + b, 0);
+
+  // 开关外观
+  for (let i = 0; i < 3; i++) {
+    const knob = document.getElementById(`knob${i}`);
+    const val  = knob.querySelector('.switch-val');
+    if (state[i]) { knob.classList.add('on'); knob.classList.remove('off'); }
+    else          { knob.classList.remove('on'); knob.classList.add('off'); }
+    val.textContent = state[i];
+  }
+
+  // 灯
+  const lamp = document.getElementById('lamp');
+  const lampLabel = document.getElementById('lampLabel');
+  if (L) { lamp.classList.add('on'); lamp.classList.remove('off'); lampLabel.textContent = '灯亮'; lampLabel.style.color = '#d97706'; }
+  else   { lamp.classList.remove('on'); lamp.classList.add('off'); lampLabel.textContent = '灯灭'; lampLabel.style.color = ''; }
+
+  // 公式
+  document.getElementById('formulaSubst').textContent =
+    `L = ${s1} ⊕ ${s2} ⊕ ${s3}`;
+  document.getElementById('formulaSteps').textContent =
+    `L = (${s1}⊕${s2})⊕${s3} = ${s1^s2}⊕${s3} = ${L}`;
+
+  // 真值表
+  const tbody = document.querySelector('#truthTable tbody');
+  tbody.innerHTML = truthTable.map((row, idx) => {
+    const active = (row.s1 === s1 && row.s2 === s2 && row.s3 === s3) ? ' class="active"' : '';
+    const lClass = row.L ? 'L-1' : 'L-0';
+    return `<tr${active}>
+      <td>${row.s1}</td><td>${row.s2}</td><td>${row.s3}</td>
+      <td class="${lClass}">${row.L}</td></tr>`;
+  }).join('');
+
+  // 底部
+  document.getElementById('onCount').textContent = onCount;
+}
+
+// ===== 事件 =====
+document.getElementById('switchRow').addEventListener('click', (e) => {
+  const block = e.target.closest('.switch-block');
+  if (!block) return;
+  const idx = parseInt(block.dataset.switch);
+  state[idx] ^= 1;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

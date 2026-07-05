@@ -1,0 +1,8 @@
+# 数学思维实践 CDIO 二级项目 · 统一依赖（覆盖三个任务）
+# 任务一/二：numpy + matplotlib（任务一 scipy.sparse 可选）
+# 任务三：numpy + scipy + matplotlib + pytest(单元测试) + streamlit(交互仪表盘)
+numpy>=1.24,<2.0
+scipy>=1.10
+matplotlib>=3.7
+pytest>=7.0
+streamlit>=1.30

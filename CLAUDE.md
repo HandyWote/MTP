@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - 工作语言：**全中文**（文档、报告、图表标题、代码注释均用中文；与用户沟通也用中文）。
 - 小组规模：3 人，分工方案 B″（独立深度执行 + 异步轻协作）。任务二负责人兼统稿。
-- 当前状态：**只有文档，尚无代码**。`mission1/` 目录已建但为空。
+- 当前状态：任务三代码已建于 `mission3/`（可一键复现，详见 `mission3/README.md`）；任务一/二待建。
 
 ## 真理来源（按优先级）
 
@@ -41,7 +41,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 任务一代码规范（已有详细设计）
 
-代码目录命名为 `missionN/`（**不是** `项目计划.md` 里写的 `taskN/`，以实际存在的 `mission1/` 目录为准）。任务一（`任务一设计.md` §7）：
+代码目录命名为 `missionN/`（与 `项目计划.md` 一致）。任务一（`任务一设计.md` §7）：
 
 ```
 mission1/
@@ -55,10 +55,12 @@ mission1/
 **技术栈（已锁定）**：Python + `numpy` + `matplotlib`（`scipy.sparse` 可选）。停止条件 `‖x_新−x_旧‖∞ < 1e-6` 或达 10000 轮；直接解用 `numpy.linalg.solve` 当裁判。
 
 > 用户全局偏好：「低技术债优先、复用优先」。任务一设计已选**单文件函数化**（非过度工程化的包结构），新任务沿用此风格。
+>
+> **例外（任务三）**：任务三因 Streamlit 加分项的「双前端」（报告图 `plot_matplotlib.py` + 交互仪表盘 `app.py`），采用「共享计算核心 `bootstrap_core.py` + 双前端 + `experiments.py`/`viz_style.py`/`run_all.py`」的多文件包结构，以复用核心、避免报告图与仪表盘重复代码。此为任务三专属例外（2026-07-04 确认），不推广至任务一/二。
 
-## 代码运行（尚无代码，待生成后的约定）
+## 代码运行
 
-- 无构建/测试框架：当前无 `requirements.txt`、无 lint、无测试套件。建代码时在根目录补 `requirements.txt`（仅 `numpy` / `matplotlib`，按需 `scipy`）。
+- 根目录已有统一 `requirements.txt`（`numpy`/`scipy`/`matplotlib` + 任务三的 `pytest` 测试与 `streamlit` 加分仪表盘）；任务一/二仅用前三个。任务三另含 `mission3/tests/` 测试套件：`python -m pytest mission3/tests/`。
 - 运行单个任务脚本：`python mission1/heat.py`，图输出到该任务的 `output/` 目录。
 - matplotlib 全局统一：中文字体、统一配色、`DPI=300`、合理 `figsize`（见 `项目计划.md` §6，细节待开题会定）。
 
