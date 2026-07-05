@@ -58,10 +58,16 @@ mission1/
 >
 > **例外（任务三）**：任务三因 Streamlit 加分项的「双前端」（报告图 `plot_matplotlib.py` + 交互仪表盘 `app.py`），采用「共享计算核心 `bootstrap_core.py` + 双前端 + `experiments.py`/`viz_style.py`/`run_all.py`」的多文件包结构，以复用核心、避免报告图与仪表盘重复代码。此为任务三专属例外（2026-07-04 确认），不推广至任务一/二。
 
-## 代码运行
+## 代码运行（统一使用 uv 管理环境）
 
-- 根目录已有统一 `requirements.txt`（`numpy`/`scipy`/`matplotlib` + 任务三的 `pytest` 测试与 `streamlit` 加分仪表盘）；任务一/二仅用前三个。任务三另含 `mission3/tests/` 测试套件：`python -m pytest mission3/tests/`。
-- 运行单个任务脚本：`python mission1/heat.py`，图输出到该任务的 `output/` 目录。
+- 统一使用 [uv](https://docs.astral.sh/uv/) 管理环境：依赖声明在根 `pyproject.toml`，锁文件 `uv.lock`，Python 版本固定于 `.python-version`（3.12）。**不再使用 `requirements.txt`**。
+- 主依赖 6 个（扁平一套，覆盖三个任务）：`numpy` / `scipy` / `matplotlib` / `pillow` / `pytest` / `streamlit`。
+- 首次/日常安装：`uv sync`；他机/打包复现：`uv sync --frozen`。
+- 运行脚本一律用 `uv run`，**不要裸 `python`**（后者找不到依赖）：
+  - 跑脚本：`uv run python mission1/heat.py`
+  - 跑测试：`uv run python -m pytest mission3/tests/`（任务一：`uv run python mission1/test_heat.py`）
+  - 仪表盘：`uv run streamlit run mission3/app.py`
+- 图输出到各任务的 `output/` 目录。
 - matplotlib 全局统一：中文字体、统一配色、`DPI=300`、合理 `figsize`（见 `项目计划.md` §6，细节待开题会定）。
 
 ## 学术规范约束（硬性）

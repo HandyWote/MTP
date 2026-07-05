@@ -26,7 +26,7 @@ Source code does not yet exist at this stage — only the planning/design docume
 - `numpy` — linear algebra, array operations
 - `matplotlib` — all visualizations (DPI=300, unified style)
 - `scipy` — optional, for sparse matrix utilities if needed
-- Dependencies listed in root `requirements.txt`
+- Environment managed with [uv](https://docs.astral.sh/uv/) — root `pyproject.toml` + `uv.lock` + `.python-version` (Python 3.12; **no `requirements.txt`**). Install: `uv sync`; run: `uv run python ...`
 
 ## Key Decisions & Conventions (from 项目计划.md)
 
@@ -46,17 +46,17 @@ Three chart categories per task:
 ## Common Commands
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies (from repo root)
+uv sync
 
-# Run any task
-python task1/heat1d.py
-python mission2/three_switch.py
-python task3/bootstrap_estimate.py
+# Run a task (use uv run, not bare python — the latter won't find deps)
+uv run python mission1/heat.py
+uv run python mission2/three_switch.py
+uv run python -m mission3.run_all
 
-# Generate all outputs for a task (each script self-contained)
-python task1/heat1d.py          # produces output/*.png
-python mission2/three_switch.py    # produces output/*.png
+# Each script is self-contained and writes to its own output/
+uv run python mission1/heat.py          # → mission1/output/*.png (+ GIFs)
+uv run python mission2/three_switch.py  # → mission2/output/*.png
 ```
 
 There is no test framework, linter, or build step — each script is standalone, produces its own figures, and prints results to stdout.

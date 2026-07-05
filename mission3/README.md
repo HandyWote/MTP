@@ -6,22 +6,20 @@
 
 ## 快速开始
 
-依赖：Python 3.10+，见仓库根 [`requirements.txt`](../requirements.txt)（`numpy<2 / scipy / matplotlib / pytest / streamlit`）。
+环境用 [uv](https://docs.astral.sh/uv/) 统一管理（仓库根 `pyproject.toml` + `uv.lock` + `.python-version`，Python 3.12）。
 
 ```bash
 # 安装依赖（从仓库根）
-pip install -r requirements.txt
+uv sync
 
 # 一键复现：跑测试 → 跑实验 → 出图（约 30 秒）
-python -m mission3.run_all                  # 从仓库根
-python -m run_all                        # 或从 mission3/ 内（两者等价）
+uv run python -m mission3.run_all          # 从仓库根
 
 # 交互仪表盘（可选）
-python -m streamlit run mission3/app.py    # 从仓库根
-python -m streamlit run app.py          # 或从 mission3/ 内（若 streamlit 已在 PATH，裸命令 `streamlit run ...` 亦可）
+uv run streamlit run mission3/app.py       # 从仓库根
 ```
 
-> 路径已做 **cwd 无关**处理，从仓库根或 `mission3/` 内运行均可。⚠️ **不要**在 `mission3/` 内用 `python -m mission3.run_all`——Python 包机制限制会报 `No module named 'mission3'`；从 `mission3/` 内请用 `python -m run_all`。
+> 一律用 `uv run`，**不要裸 `python`/`streamlit`**（找不到依赖）。从仓库根运行即可——路径已做 **cwd 无关**处理。
 
 ## 数据
 
@@ -97,7 +95,7 @@ mission3/
 
 ## 可复现性
 
-固定随机种子（`np.random.default_rng(42)`）：`experiments.json` 数值结果可逐字复现；5 张 PNG 在相同 Python / matplotlib / 字体环境下亦可字节级复现（已验证 md5 不变）。`python -m pytest mission3/tests/` 8/8 全绿。
+固定随机种子（`np.random.default_rng(42)`）：`experiments.json` 数值结果可逐字复现；5 张 PNG 在相同 Python / matplotlib / 字体环境下亦可字节级复现（已验证 md5 不变）。`uv run python -m pytest mission3/tests/` 8/8 全绿。
 
 ## AI 使用声明
 
