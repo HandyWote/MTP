@@ -49,3 +49,44 @@ def build_2d(n, T_top, T_others):
 def solve_direct(A, b):
     """直接法（裁判）。"""
     return np.linalg.solve(A, b)
+
+
+def jacobi(A, b, x0, tol=1e-6, max_iter=10000, snapshot_every=None):
+    """Jacobi：整轮用旧值（双缓冲 x / x_new）。"""
+    n = len(b)
+    x = np.asarray(x0, dtype=float).copy()
+    x_new = x.copy()
+    err_hist, snaps = [], []
+    if snapshot_every: snaps.append(x.copy())  # 初值快照
+    for it in range(max_iter):
+        for i in range(n):
+            s = b[i] - A[i] @ x + A[i, i] * x[i]   # 减去 A[i,i]*x[i] 因含在对角
+            x_new[i] = s / A[i, i]
+        diff = np.max(np.abs(x_new - x))
+        x, x_new = x_new, x        # 换引用（旧 x 的内存复用为下一轮 x_new）
+        err_hist.append(diff)
+        if snapshot_every and (it + 1) % snapshot_every == 0:
+            snaps.append(x.copy())
+        if diff < tol:
+            break
+    return x, err_hist, snaps
+
+
+def gauss_seidel(A, b, x0, tol=1e-6, max_iter=10000, snapshot_every=None):
+    """Gauss-Seidel：算过的分量立即用新值（in-place 就地更新）。"""
+    n = len(b)
+    x = np.asarray(x0, dtype=float).copy()
+    err_hist, snaps = [], []
+    if snapshot_every: snaps.append(x.copy())
+    for it in range(max_iter):
+        x_old = x.copy()
+        for i in range(n):
+            s = b[i] - A[i] @ x + A[i, i] * x[i]
+            x[i] = s / A[i, i]
+        diff = np.max(np.abs(x - x_old))
+        err_hist.append(diff)
+        if snapshot_every and (it + 1) % snapshot_every == 0:
+            snaps.append(x.copy())
+        if diff < tol:
+            break
+    return x, err_hist, snaps
